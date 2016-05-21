@@ -17,7 +17,7 @@ idsymbol = oneOf "!$%&|*+-/:<=>?@^_~"
 
 identifier :: Parser VarName
 identifier = do
-  first <- letter
+  first <- choice [letter, idsymbol]
   rest <- many (choice [alphaNum, idsymbol])
   return $ pack (first:rest)
 
@@ -36,6 +36,8 @@ boolExpr = do
     'f' -> False
     _ -> error "Shouldn't get here"
 
+sexp = between lparen rparen . try
+
 lambdaExpr :: Parser Expr
 lambdaExpr = between lparen rparen $ do
   string "lambda"
@@ -48,6 +50,7 @@ lambdaExpr = between lparen rparen $ do
 apExpr :: Parser Expr
 apExpr = between lparen rparen $ do
   funcExpr <- expr
+  spaces
   rest <- expr `sepBy` spaces
   return $ ap funcExpr rest
 
@@ -71,6 +74,7 @@ beginExpr = between lparen rparen $ do
 condExpr :: Parser Expr
 condExpr =  between lparen rparen $ do
   string "cond"
+  spaces
   let condition = between lparen rparen $ do
         test <- expr
         spaces
@@ -79,7 +83,7 @@ condExpr =  between lparen rparen $ do
   cond <$> condition `sepBy` spaces
 
 expr :: Parser Expr
-expr = choice [lambdaExpr, beginExpr, condExpr, ifExpr, boolExpr, numberExpr, varExpr, apExpr]
+expr = choice $ map try [lambdaExpr, beginExpr, condExpr, ifExpr, boolExpr, numberExpr, varExpr, apExpr]
 
 testParse s = parse expr "" s
 

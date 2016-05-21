@@ -17,8 +17,8 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Lexicon.Lisp.Eval
-  -- other-modules:       
+  exposed-modules:     Lexicon.Lisp.Eval, Lexicon.Lisp.Parser
+  other-modules: Lexicon.Lisp.Types
   -- other-extensions:    
   build-depends:
       base            >= 4.8 && < 4.9

@@ -1,15 +1,12 @@
 module Lexicon.Lisp.Eval where
 
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Typeable
 import Data.Fix
 import Data.Maybe
-import Data.Either
 
-type VarName = Text
+import Lexicon.Lisp.Types
 
 maybeToEither :: b -> Maybe a -> Either b a
 maybeToEither x my = case my of
@@ -27,17 +24,6 @@ instance Show Value where
     Number n -> show n
     Boolean b -> if b then "#t" else "#f"
     Proc _ -> "<lambda>"
-data ExprF a = V VarName
-           | N Integer
-           | B Bool
-           | Lambda [VarName] Expr
-           | Begin [a]
-           | Cond [(a, a)]
-           | If a a a
-           | Ap a [a]
-           deriving (Eq, Show, Functor, Foldable, Traversable, Typeable)
-
-type Expr = Fix ExprF
 
 lastMay :: [a] -> Maybe a
 lastMay xs = case xs of
@@ -58,7 +44,7 @@ eval' env expr = case expr of
            Cond pairs -> case pairs of
                            [] -> return Nil
                            ((Boolean b, v):rest) -> if b then return v else eval' env (Cond rest)
-                           (_:rest) -> Left $ "Non-boolean Cond condition"
+                           _ -> Left $ "Non-boolean Cond condition"
            If pred tval fval -> case pred of
              Boolean True -> return tval
              Boolean False -> return fval
@@ -93,7 +79,6 @@ sumvals :: [Value] -> Value
 sumvals vs = Number . sum . catMaybes . map pred $ vs
   where pred (Number x) = Just x
         pred _ = Nothing
-
 
 testEnv :: Env
 testEnv = initEnv ["a", "b", "c", "+"] $ map Number [1, 10, 100] ++ map (Proc . (return .)) [sumvals]

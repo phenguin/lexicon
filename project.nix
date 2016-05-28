@@ -1,6 +1,6 @@
 { inputModifier ? x: x }:
-{ mkDerivation, base, containers, criterion, free, parsec
-, QuickCheck, stdenv, text, transformers, unordered-containers, data-fix
+{ mkDerivation, base, containers, criterion, data-fix, free, parsec
+, QuickCheck, stdenv, text, transformers, unordered-containers
 }:
 mkDerivation (inputModifier {
   pname = "lexicon";
@@ -9,10 +9,10 @@ mkDerivation (inputModifier {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    base containers criterion free parsec QuickCheck text transformers
-    unordered-containers data-fix
+    base containers criterion data-fix free parsec QuickCheck text
+    transformers unordered-containers
   ];
-  executableHaskellDepends = [ base ];
+  executableHaskellDepends = [ base text ];
   homepage = "https://github.com/phenguin/lexicon";
   license = stdenv.lib.licenses.mit;
 })

@@ -1,6 +1,7 @@
 module Lexicon.Lisp.Eval where
 
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Fix
@@ -16,28 +17,17 @@ maybeToEither x my = case my of
 newtype Frame = Frame {frameMap :: Map VarName Value}
 type Env = [Frame]
 
-data Value = Nil | Symbol Text | Number Integer | Boolean Bool | Proc ([Value] -> Either ErrorMsg Value)
-instance Show Value where
-  show v = case v of
-    Nil -> "nil"
-    Symbol text -> show text
-    Number n -> show n
-    Boolean b -> if b then "#t" else "#f"
-    Proc _ -> "<lambda>"
-
 lastMay :: [a] -> Maybe a
 lastMay xs = case xs of
   [] -> Nothing
   [x] -> Just x
   (_:xs) -> lastMay xs
 
-type ErrorMsg = String
-
 eval' :: Env -> ExprF Value -> Either ErrorMsg Value
 eval' env expr = case expr of
            N i -> return $ Number i
            B b -> return $ Boolean b
-           V name -> maybeToEither "Variable not found" $ envFind env name
+           V name -> maybeToEither ("Variable not found " ++ (T.unpack name)) $ envFind env name
            Lambda vars expr -> return . Proc $ \vals ->
              eval (makeEnv vars vals env) expr
            Begin exprs -> return $ fromMaybe Nil (lastMay exprs)

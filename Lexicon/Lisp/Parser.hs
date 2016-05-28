@@ -1,9 +1,10 @@
 module Lexicon.Lisp.Parser where
 
 import Text.Parsec
+import Control.Monad hiding (ap)
 import Text.Parsec.Text
 import Control.Applicative hiding (many)
-import Data.Text (pack, unpack)
+import Data.Text (pack, unpack, Text)
 
 import Lexicon.Lisp.Types
 
@@ -85,9 +86,11 @@ condExpr =  between lparen rparen $ do
 expr :: Parser Expr
 expr = choice $ map try [lambdaExpr, beginExpr, condExpr, ifExpr, boolExpr, numberExpr, varExpr, apExpr]
 
-testParse s = parse expr "" s
+testParse :: Text -> Either ParseError Expr
+testParse = parse expr ""
 
-testParseFromInput :: IO (Either ParseError Expr)
-testParseFromInput = do
-  toParse <- pack <$> getContents
-  return $ testParse toParse
+testParseFromInput :: IO String -> IO (Either ParseError Expr)
+testParseFromInput = liftM (testParse . pack)
+-- testParseFromInput source = do
+--   toParse <- pack <$> source
+--   return $ testParse toParse
